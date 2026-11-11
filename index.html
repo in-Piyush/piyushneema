@@ -1496,6 +1496,11 @@
             }
         }
 
+    
+        h1 span:nth-child(2) i { background: linear-gradient(100deg, #b8902a 15%, #fff0a8 50%, #b8902a 85%); background-size: 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: up .9s cubic-bezier(.2, .8, .2, 1) .12s forwards, sh 5s linear 1s infinite }
+        @keyframes sh { to { background-position: -250% 0 } }
+        nav div a { position: relative } nav div a::after { content: ""; position: absolute; left: 0; bottom: -4px; height: 2px; width: 100%; background: var(--gold); transform: scaleX(0); transform-origin: right; transition: transform .35s } nav div a:hover::after { transform: scaleX(1); transform-origin: left }
+        .btn.p { position: relative; overflow: hidden } .btn.p::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent); transform: skewX(-20deg); animation: shine 3.5s ease-in-out 1.5s infinite } @keyframes shine { 0%, 60% { left: -60% } 100% { left: 140% } }
     </style>
 </head>
 
@@ -1951,22 +1956,37 @@
             for (let a = 0; a < 16; a++) { const m = new THREE.Mesh(bx, lam(cols.w)); m.scale.setScalar(.6); m.position.set(Math.cos(a / 16 * 6.283) * 3.2, 1.05, Math.sin(a / 16 * 6.283) * 3.2); isl.add(m) }
             world.add(isl);
             const gold = 0xd4af37;
-            // voxel panda
+            // voxel panda v2
             const panda = new THREE.Group(), P = (w, h, d, c, x, y, z, par) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), lam(c)); m.position.set(x, y, z); par.add(m); return m };
-            const W = 0xf4f6f2, K = 0x1b2428;
+            const W = 0xf4f6f2, K = 0x1b2428, G = 0x6b777b;
             const body = new THREE.Group(); body.position.y = 1.7; panda.add(body);
-            P(2.2, 1.8, 1.8, W, 0, 0, 0, body); P(1.3, 1.1, .1, 0xe6ebe6, 0, -.1, .91, body);
-            P(.8, .8, .9, K, -.65, .4, .45, panda); P(.8, .8, .9, K, .65, .4, .45, panda);
-            P(.6, 1.4, .7, K, -1.4, 1.7, .1, panda);
-            P(.22, 3.2, .22, 0xc9a24b, -1.9, 2.1, .5, panda);[1, 2.1, 3.1].forEach(y => P(.32, .08, .32, 0x8a6d1f, -1.9, y, .5, panda));
-            const arm = new THREE.Group(); arm.position.set(1.4, 2.4, .1); panda.add(arm); P(.6, 1.4, .7, K, 0, -.6, 0, arm);
+            P(2.2, 1.8, 1.8, W, 0, 0, 0, body); P(1.35, 1.15, .1, 0xe7eae4, 0, -.15, .91, body); P(2.3, .55, 1.9, K, 0, .62, 0, body);
+            const tail = P(.55, .55, .45, W, 0, -.5, -1.1, body);
+            [-.65, .65].forEach(x => { P(.8, .8, .9, K, x, .4, .45, panda); P(.5, .12, .4, G, x, .04, .75, panda) });
+            const mkArm = x => { const g = new THREE.Group(); g.position.set(x, 2.4, .1); panda.add(g); P(.6, 1.4, .7, K, 0, -.6, 0, g); P(.62, .35, .72, 0x2a363a, 0, -1.2, 0, g); return g };
+            const armL = mkArm(-1.4), armR = mkArm(1.4);
+            const bam = new THREE.Group(); bam.rotation.order = 'ZYX'; bam.position.set(-.5, -1.3, .4); armL.add(bam); const stalk = P(.2, 2.8, .2, 0xc9a24b, 0, .1, 0, bam), nodes = [-.9, .1, 1.1].map(y => P(.3, .07, .3, 0x8a6d1f, 0, y, 0, bam));
             const head = new THREE.Group(); head.position.y = 3.65; panda.add(head);
-            P(2.4, 1.9, 1.9, W, 0, 0, 0, head); P(.7, .7, .4, K, -.95, 1.15, 0, head); P(.7, .7, .4, K, .95, 1.15, 0, head);
-            P(.65, .75, .2, K, -.55, .1, .95, head); P(.65, .75, .2, K, .55, .1, .95, head);
-            const ey = new THREE.Group(); ey.position.y = .15; head.add(ey);
-            [-.55, .55].forEach(x => { P(.3, .3, .1, W, x, 0, 1.06, ey); P(.14, .14, .1, K, x, 0, 1.11, ey) });
+            P(2.4, 1.9, 1.9, W, 0, 0, 0, head);
+            const earL = new THREE.Group(), earR = new THREE.Group();
+            [earL, earR].forEach((e, i) => { e.position.set(i ? .95 : -.95, 1.15, 0); head.add(e); P(.7, .7, .4, K, 0, 0, 0, e); P(.34, .34, .1, G, 0, 0, .2, e) });
+            [-1, 1].forEach(s => { const m = P(.62, .82, .2, K, s * .55, .1, .95, head); m.rotation.z = s * .22; P(.3, .18, .05, 0xe9b7a5, s * .98, -.3, .96, head) });
+            const ey = new THREE.Group(); ey.position.y = .15; head.add(ey); const pup = [];
+            [-.55, .55].forEach(x => { P(.3, .3, .1, W, x, 0, 1.06, ey); const p = P(.15, .15, .1, K, x, 0, 1.11, ey); p.userData.bx = x; pup.push(p) });
             P(.9, .55, .15, 0xece6d8, 0, -.35, .97, head); P(.38, .26, .12, K, 0, -.15, 1.07, head);
-            panda.scale.setScalar(1.1); world.add(panda); let wa = .15;
+            const mouth = P(.34, .07, .06, K, 0, -.5, 1.06, head);
+            panda.scale.setScalar(1.1); world.add(panda);
+            // halo rings
+            const halo = new THREE.Group(); world.add(halo);
+            [[8.2, .06, 0], [9.6, .04, .5]].forEach(([r, w, tl], i) => { const m = new THREE.Mesh(new THREE.TorusGeometry(r, w, 6, 96), new THREE.MeshBasicMaterial({ color: gold, transparent: true, opacity: .34 - i * .12 })); m.rotation.x = Math.PI / 2 + tl * .3; halo.add(m) });
+            // director state
+            const SEQ = [['idle', 2.5], ['wave', 3], ['idle', 2.5], ['stretch', 2.4]], Q = { rx: 0, rz: .12, lz: 0, lx: 0, hx: 0, mw: 1, mh: 1, ey: 1, mun: 0 };
+            let seq = 0, st = 'idle', stT = 2.5, idle = 0, cheer = 0, cheerT = 0, tw = 0, earT = 2, zt = 0; const zs = [];
+            ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'].forEach(ev => addEventListener(ev, () => { idle = 0 }, { passive: true }));
+            document.addEventListener('pointerover', e => { cheerT = e.target.closest && e.target.closest('.btn,.tab,.prod') ? 1 : 0 });
+            function spawnZ() { const g = new THREE.Group();[[.5, .1, 0, .25, 0], [.5, .1, 0, -.25, 0], [.1, .62, 0, 0, -.9]].forEach(([w, h, x, y, r]) => { const m = P(w, h, .1, gold, x, y, 0, g); m.rotation.z = r }); g.position.set(1.7, 5.2, 1); g.userData = { l: 0 }; g.scale.setScalar(.01); world.add(g); zs.push(g) }
+            let wa = .15, bt = 0, lastBite = -1, bamLen = 1;
+            function crumbs() { const v = new THREE.Vector3(); head.localToWorld(v.set(0, -.5, 1.1)); world.worldToLocal(v); for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(bx, lam(0xc9a24b)); m.scale.setScalar(.07 + Math.random() * .07); m.position.copy(v); m.userData = { v: new THREE.Vector3((Math.random() - .5) * 2.5, Math.random() * 2 + 1, Math.random() * 2 + .5), l: .6 }; world.add(m); parts.push(m) } }
             // floating cubes
             const fl = []; for (let i = 0; i < 24; i++) {
                 const m = new THREE.Mesh(bx, lam([cols.g, cols.w, gold][i % 3])); const s = .15 + Math.random() * .25; m.scale.setScalar(s);
@@ -1987,10 +2007,33 @@
                 world.rotation.y = mx * .25 + Math.sin(t * .3) * .1; world.rotation.x = my * .08; isl.rotation.y = t * .12 + sy * 6.3;
                 const zoom = wide ? 24 - sy * 5 : 30; cam.position.set(0, 6 + sy * 3, zoom); cam.lookAt(0, 2.2, 0);
                 isl.position.y = Math.sin(t * .8) * .3;
-                const br = Math.sin(t * 2) * .03; body.scale.y = 1 + br; head.position.y = 3.65 + br * 1.5;
-                head.rotation.y = mx * 1.0; head.rotation.x = my * .5;
-                wa += ((Math.sin(t * .45) > .2 ? 2.5 + Math.sin(t * 7) * .35 : .15) - wa) * .12; arm.rotation.z = wa;
-                ey.scale.y = (t % 4) > 3.85 ? .1 : 1; panda.position.y = .5 + isl.position.y;
+                const sl = idle > 14; idle += dt; stT -= dt; if (stT <= 0) { seq = (seq + 1) % SEQ.length; st = SEQ[seq][0]; stT = SEQ[seq][1] }
+                cheer += (cheerT - cheer) * .15; const S = sl ? 'sleep' : (cheer > .5 ? 'cheer' : st), br = Math.sin(t * (sl ? 1 : 2)) * .03;
+                if (S === 'munch') bt += dt; else { bt = 0; lastBite = -1 }
+                const T = { rx: 0, rz: .12, lz: 0, lx: 0, hx: 0, mw: 1, mh: 1, ey: 1, mun: 0 };
+                if (S === 'wave') T.rz = 2.5 + Math.sin(t * 7) * .35;
+                else if (S === 'cheer') { T.rz = 2.7 + Math.sin(t * 10) * .25; T.lz = -2.7 - Math.sin(t * 10) * .25; T.mw = 2; T.ey = .4 }
+                else if (S === 'stretch') { T.rz = 2.9; T.lz = -2.9; T.hx = -.35; T.mh = 4; T.mw = .9; T.ey = .3 }
+                else if (S === 'munch') {
+                    const p = (bt % 1.3) / 1.3, bi = Math.floor(bt / 1.3); T.lz = 1.1; T.lx = -.9; T.rz = -1.0; T.rx = -.9; T.mun = 1;
+                    if (p < .35) { T.mh = 1 + (p / .35) * 2.6; T.hx = -.12 } else { T.mh = 1 + .7 * Math.abs(Math.sin(t * 16)); T.hx = .1 + Math.sin(t * 16) * .03; if (bi !== lastBite) { lastBite = bi; crumbs(); bamLen = Math.max(.55, bamLen - .08) } }
+                }
+                else if (S === 'sleep') { T.rz = .05; T.hx = .45; T.ey = .08 }
+                for (const k in Q) Q[k] += (T[k] - Q[k]) * .14;
+                armR.rotation.z = Q.rz; armR.rotation.x = Q.rx; armL.rotation.z = Q.lz; armL.rotation.x = Q.lx;
+                bam.position.set(-.5 + .1 * Q.mun, -1.3 - .15 * Q.mun, .4 + .05 * Q.mun); bam.rotation.x = -armL.rotation.x; bam.rotation.z = -armL.rotation.z;
+                bamLen += ((S === 'munch' ? bamLen : 1) - bamLen) * Math.min(1, dt * .9); stalk.scale.y = bamLen; stalk.position.y = 1.5 - 1.4 * bamLen; nodes.forEach(n => n.visible = n.position.y > 1.6 - 2.8 * bamLen);
+                body.scale.y = 1 + br; head.position.y = 3.65 + br * 1.5;
+                head.rotation.y = sl ? 0 : mx; head.rotation.x = (sl ? 0 : my * .5) + Q.hx;
+                pup.forEach(p => { p.position.x = p.userData.bx + (sl ? 0 : mx * .12); p.position.y = sl ? 0 : -my * .1 });
+                mouth.scale.set(Q.mw, Q.mh, 1); ey.scale.y = Math.min(Q.ey, (t % 4) > 3.85 ? .1 : 1);
+                tail.position.x = Math.sin(t * (cheer > .5 ? 14 : 3)) * .2;
+                earT -= dt; if (earT <= 0) { earT = 2 + Math.random() * 4; tw = 1 } tw = Math.max(0, tw - dt * 2); earR.rotation.z = -Math.sin(tw * 12) * tw * .4; earL.rotation.z = Math.sin(tw * 12) * tw * .15;
+                isl.children.forEach((m, i) => { if (i) { m.position.y = 1.05 + Math.sin(t * 2 + i * .6) * .2; m.rotation.y = t * .8 + i } });
+                halo.rotation.y = t * .2; halo.position.y = -1 + isl.position.y;
+                panda.position.y = .5 + isl.position.y + Math.abs(Math.sin(t * 9)) * .5 * cheer;
+                if (sl) { zt -= dt; if (zt <= 0) { zt = 1.2; spawnZ() } }
+                for (let i = zs.length - 1; i >= 0; i--) { const g = zs[i], u = g.userData; u.l += dt; g.position.y += dt * .9; g.position.x += dt * .3; g.scale.setScalar(Math.max(.01, Math.min(u.l * 1.5, 1) * (u.l > 2 ? 3 - u.l : 1))); if (u.l > 3) { world.remove(g); zs.splice(i, 1) } }
                 if (jt >= 0) { jt += dt; const k = Math.min(jt / .8, 1); panda.position.y += Math.sin(k * Math.PI) * 3.2; panda.rotation.y = k * 6.283; if (jt > .8) { jt = -1; panda.rotation.y = 0 } }
                 for (let i = parts.length - 1; i >= 0; i--) { const m = parts[i], u = m.userData; u.v.y -= 16 * dt; m.position.addScaledVector(u.v, dt); m.rotation.x += dt * 6; u.l += dt; if (u.l > 1.6) { world.remove(m); parts.splice(i, 1) } else if (u.l > 1) m.scale.multiplyScalar(.94) }
                 fl.forEach(m => { const u = m.userData; u.a += u.sp * dt * (still ? 0 : 1); m.position.set(Math.cos(u.a) * u.r, u.y + Math.sin(t + u.a) * .4, Math.sin(u.a) * u.r); m.rotation.x += dt * .5 * (still ? 0 : 1) });
